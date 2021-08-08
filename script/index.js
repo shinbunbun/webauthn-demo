@@ -49,8 +49,6 @@ const register = () => {
 
   
 
-
-
   /* // 新しい認証情報の作成/登録
   navigator.credentials.create(createCredentialDefaultArgs)
     .then((cred) => {
