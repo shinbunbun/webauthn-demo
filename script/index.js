@@ -71,7 +71,7 @@ const register = async () => {
 
   // 新しい認証情報の作成/登録
   navigator.credentials.create(createCredentialDefaultArgs)
-    .then((cred) => {
+    .then(async (cred) => {
       console.log("NEW CREDENTIAL", cred);
 
       console.log(cred.id);
@@ -88,7 +88,17 @@ const register = async () => {
         }
       };
 
-      await axios.post('/register', authRes);
+      authRes.response.attestationObject.attStmt.sig = btoa(String.fromCharCode(...authRes.response.attestationObject.attStmt.sig));
+      authRes.response.attestationObject.authData = btoa(String.fromCharCode(...authRes.response.attestationObject.authData));
+
+      console.log(authRes)
+      console.log(JSON.stringify(authRes))
+
+      const res = await axios.post('/register', authRes);
+
+      if (res.data.verificationStatus === "succeeded") {
+        location.href = "/success-sign-in"
+      }
 
       /* const idList = [{
         id: cred.rawId,

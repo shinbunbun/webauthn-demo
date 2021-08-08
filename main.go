@@ -22,8 +22,23 @@ type JsonRequest struct {
 }
 
 type RegisterJson struct {
-	Id    string `json:"id"`
-	RawId string `json:"rawId"`
+	ID       string `json:"id"`
+	Response struct {
+		ClientDataJSON struct {
+			Type        string `json:"type"`
+			Challenge   string `json:"challenge"`
+			Origin      string `json:"origin"`
+			CrossOrigin bool   `json:"crossOrigin"`
+		} `json:"clientDataJSON"`
+		AttestationObject struct {
+			Fmt     string `json:"fmt"`
+			AttStmt struct {
+				Alg int    `json:"alg"`
+				Sig string `json:"sig"`
+			} `json:"attStmt"`
+			AuthData string `json:"authData"`
+		} `json:"attestationObject"`
+	} `json:"response"`
 }
 
 type Session struct {
@@ -42,10 +57,14 @@ func main() {
 		ctx.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
+	router.GET("/success-sign-in", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "success-sign-in.html", gin.H{})
+	})
+
 	router.Use(cors.New(cors.Config{
 		// アクセスを許可したいアクセス元
 		AllowOrigins: []string{
-			"http://localhost",
+			"http://localhost:8080",
 		},
 		// アクセスを許可したいHTTPメソッド(以下の例だとPUTやDELETEはアクセスできません)
 		AllowMethods: []string{
@@ -96,7 +115,12 @@ func main() {
 	})
 
 	router.POST("/register", func(ctx *gin.Context) {
-		/* var json RegisterJson */
+		var json RegisterJson
+		if err := ctx.ShouldBindJSON(&json); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
 	})
 
 	router.Run(":8080")
