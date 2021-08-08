@@ -21,6 +21,11 @@ type JsonRequest struct {
 	DisplayName string `json:"display_name"`
 }
 
+type RegisterJson struct {
+	Id    string `json:"id"`
+	RawId string `json:"rawId"`
+}
+
 type Session struct {
 	Id        string `gorm:"column:id"`
 	Email     string `gorm:"column:email"`
@@ -63,7 +68,7 @@ func main() {
 		MaxAge: 24 * time.Hour,
 	}))
 
-	router.POST("/register", func(ctx *gin.Context) {
+	router.POST("/register-request", func(ctx *gin.Context) {
 		var json JsonRequest
 		if err := ctx.ShouldBindJSON(&json); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -88,6 +93,10 @@ func main() {
 		var sessionData = Session{Id: uuidObj.String(), Email: json.Email, Challenge: challenge.String()}
 		db.Create(&sessionData)
 		ctx.JSON(http.StatusOK, gin.H{"id": base64.StdEncoding.EncodeToString([]byte(sessionData.Id)), "challenge": base64.StdEncoding.EncodeToString([]byte(sessionData.Challenge)), "rp": "bunbun-test-rp"})
+	})
+
+	router.POST("/register", func(ctx *gin.Context) {
+		/* var json RegisterJson */
 	})
 
 	router.Run(":8080")

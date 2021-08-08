@@ -57,7 +57,7 @@ const register = async () => {
   const email = document.querySelector('#inputEmail').value;
   const displayName = document.querySelector('#inputDisplayName').value;
 
-  const res = (await axios.post('/register', { email, display_name: displayName })).data;
+  const res = (await axios.post('/register-request', { email, display_name: displayName })).data;
   console.log(res);
 
   createCredentialDefaultArgs.publicKey.rp.name = res.rp;
@@ -74,13 +74,29 @@ const register = async () => {
     .then((cred) => {
       console.log("NEW CREDENTIAL", cred);
 
-      const idList = [{
+      console.log(cred.id);
+      console.log(cred.response.clientDataJSON);
+      console.log(cred.response.attestationObject);
+      console.log(JSON.parse(String.fromCharCode.apply(null, new Uint8Array(cred.response.clientDataJSON))))
+      console.log(cbor.decode(cred.response.attestationObject))
+
+      const authRes = {
+        id: cred.id,
+        response: {
+          clientDataJSON: JSON.parse(String.fromCharCode.apply(null, new Uint8Array(cred.response.clientDataJSON))),
+          attestationObject: cbor.decode(cred.response.attestationObject)
+        }
+      };
+
+      await axios.post('/register', authRes);
+
+      /* const idList = [{
         id: cred.rawId,
         transports: ["usb", "nfc", "ble", "internal"],
         type: "public-key"
       }];
       getCredentialDefaultArgs.publicKey.allowCredentials = idList;
-      return navigator.credentials.get(getCredentialDefaultArgs);
+      return navigator.credentials.get(getCredentialDefaultArgs); */
     })/* 
     .then((assertion) => {
       console.log("ASSERTION", assertion);
