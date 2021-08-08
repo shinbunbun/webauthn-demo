@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"math/big"
 
+	"encoding/base64"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -85,7 +87,7 @@ func main() {
 
 		var sessionData = Session{Id: uuidObj.String(), Email: json.Email, Challenge: challenge.String()}
 		db.Create(&sessionData)
-		ctx.JSON(http.StatusOK, gin.H{"id": sessionData.Id, "challenge": sessionData.Challenge})
+		ctx.JSON(http.StatusOK, gin.H{"id": base64.StdEncoding.EncodeToString([]byte(sessionData.Id)), "challenge": base64.StdEncoding.EncodeToString([]byte(sessionData.Challenge)), "rp": "bunbun-test-rp"})
 	})
 
 	router.Run(":8080")

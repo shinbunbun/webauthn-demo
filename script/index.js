@@ -41,33 +41,51 @@ const getCredentialDefaultArgs = {
   },
 };
 
-const register = () => {
+const base64ToArrayBuffer = (base64) => {
+  let binary = atob(base64);
+  let len = binary.length;
+  let bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+const register = async () => {
 
   // メアドと名前を取得
   const email = document.querySelector('#inputEmail').value;
   const displayName = document.querySelector('#inputDisplayName').value;
 
-  
+  const res = (await axios.post('/register', { email, display_name: displayName })).data;
+  console.log(res);
 
-  /* // 新しい認証情報の作成/登録
+  createCredentialDefaultArgs.publicKey.rp.name = res.rp;
+  createCredentialDefaultArgs.publicKey.user = {
+    id: base64ToArrayBuffer(res.id).buffer,
+    name: email,
+    displayName
+  };
+  createCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
+  getCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
+
+  // 新しい認証情報の作成/登録
   navigator.credentials.create(createCredentialDefaultArgs)
     .then((cred) => {
       console.log("NEW CREDENTIAL", cred);
 
-      // 通常はサーバーから利用可能なアカウントの認証情報が送られてきますが
-      // この例では上からコピーしただけです。
-      var idList = [{
+      const idList = [{
         id: cred.rawId,
-        transports: ["usb", "nfc", "ble"],
+        transports: ["usb", "nfc", "ble", "internal"],
         type: "public-key"
       }];
       getCredentialDefaultArgs.publicKey.allowCredentials = idList;
       return navigator.credentials.get(getCredentialDefaultArgs);
-    })
+    })/* 
     .then((assertion) => {
       console.log("ASSERTION", assertion);
-    })
+    }) */
     .catch((err) => {
       console.log("ERROR", err);
-    }); */
+    });
 }
