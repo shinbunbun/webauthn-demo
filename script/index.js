@@ -1,31 +1,34 @@
 // 登録のサンプル引数
 const createCredentialDefaultArgs = {
   publicKey: {
-    // Relying Party (a.k.a. - Service):
+
+    // RPの情報
     rp: {
-      name: "bunbun-test-rp"
+      name: ''
     },
 
-    // User:
+    // ユーザー情報
     user: {
-      id: new Uint8Array(16),
-      name: "john.p.smith@example.com",
-      displayName: "John P. Smith"
+      id: '',
+      name: '',
+      displayName: ''
     },
 
+    // pubkeyの種類
+    // algの種類はhttps://www.iana.org/assignments/cose/cose.xhtml#algorithmsで定義されている
     pubKeyCredParams: [{
       type: "public-key",
       alg: -7
     }],
 
+    // RPにAuthenticationデータを渡すかどうか
     attestation: "direct",
 
+    // タイムアウト時間
     timeout: 60000,
 
-    challenge: new Uint8Array([ // サーバーから暗号学的にランダムな値が送られていなければならない
-      0x8C, 0x0A, 0x26, 0xFF, 0x22, 0x91, 0xC1, 0xE9, 0xB9, 0x4E, 0x2E, 0x17, 0x1A, 0x98, 0x6A, 0x73,
-      0x71, 0x9D, 0x43, 0x48, 0xD5, 0xA7, 0x6A, 0x15, 0x7E, 0x38, 0x94, 0x52, 0x77, 0x97, 0x0F, 0xEF
-    ]).buffer
+    // サーバーから暗号学的にランダムな値が送られていなければならない
+    challenge: ''
   }
 };
 
@@ -43,7 +46,18 @@ const getCredentialDefaultArgs = {
 
 const register = () => {
 
-  // 新しい認証情報の作成/登録
+  // メアドと名前を取得
+  const eMail = document.querySelector('#inputEmail').value;
+  const displayName = document.querySelector('#inputDisplayName').value;
+
+  // idを生成
+  const array = new Uint32Array(1);
+  window.crypto.getRandomValues(array);
+  const id = array[0];
+
+
+
+  /* // 新しい認証情報の作成/登録
   navigator.credentials.create(createCredentialDefaultArgs)
     .then((cred) => {
       console.log("NEW CREDENTIAL", cred);
@@ -63,5 +77,5 @@ const register = () => {
     })
     .catch((err) => {
       console.log("ERROR", err);
-    });
+    }); */
 }
