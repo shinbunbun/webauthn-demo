@@ -42,9 +42,16 @@ type RegisterJson struct {
 }
 
 type Session struct {
-	Id        string `gorm:"column:id"`
-	Email     string `gorm:"column:email"`
-	Challenge string `gorm:"column:challenge"`
+	Id          string `gorm:"column:id"`
+	Email       string `gorm:"column:email"`
+	Challenge   string `gorm:"column:challenge"`
+	DisplayName string `gorm:"column:displayname"`
+}
+
+type User struct {
+	Id          string `gorm:"column:id"`
+	Email       string `gorm:"column:email"`
+	DisplayName string `gorm:"column:displayname"`
 }
 
 func main() {
@@ -108,10 +115,11 @@ func main() {
 		if uuidErr != nil {
 			println(challengeErr)
 		}
-
-		var sessionData = Session{Id: uuidObj.String(), Email: json.Email, Challenge: challenge.String()}
+		var id string = base64.StdEncoding.EncodeToString([]byte(uuidObj.String()))
+		var challengeStr string = base64.StdEncoding.EncodeToString([]byte(challenge.String()))
+		var sessionData = Session{Id: id, Email: json.Email, Challenge: challengeStr, DisplayName: json.DisplayName}
 		db.Create(&sessionData)
-		ctx.JSON(http.StatusOK, gin.H{"id": base64.StdEncoding.EncodeToString([]byte(sessionData.Id)), "challenge": base64.StdEncoding.EncodeToString([]byte(sessionData.Challenge)), "rp": "bunbun-test-rp"})
+		ctx.JSON(http.StatusOK, gin.H{"id": id, "challenge": challengeStr, "rp": "bunbun-test-rp"})
 	})
 
 	router.POST("/register", func(ctx *gin.Context) {
@@ -120,6 +128,19 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		db, dbErr := gorm.Open("sqlite3", "store.sqlite")
+		if dbErr != nil {
+			println(dbErr)
+		}
+
+		var session Session
+
+		db.Where("challenge = ?", json.Response.ClientDataJSON.Challenge).First(&session)
+
+		var userData = User{Id: session.Id, Email: session.Email, DisplayName: session.DisplayName}
+		db.Create(&userData)
+
 		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
 	})
 
