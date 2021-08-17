@@ -1,5 +1,7 @@
 # webauthn-demo
 
+Web Authentication APIのデモアプリです。
+
 ## 使い方
 
 ```terminal
