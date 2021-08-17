@@ -41,6 +41,9 @@ type RegisterJson struct {
 	} `json:"response"`
 }
 
+type LoginRequestParam struct {
+}
+
 type Session struct {
 	Id          string `gorm:"column:id"`
 	Email       string `gorm:"column:email"`
@@ -142,6 +145,16 @@ func main() {
 		db.Create(&userData)
 
 		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
+	})
+
+	router.GET("/login-request", func(ctx *gin.Context) {
+		challenge, challengeErr := rand.Int(rand.Reader, big.NewInt(999999999999999999))
+		if challengeErr != nil {
+			println(challengeErr)
+		}
+		var challengeStr string = base64.StdEncoding.EncodeToString([]byte(challenge.String()))
+
+		ctx.JSON(http.StatusOK, gin.H{"challenge": challengeStr})
 	})
 
 	router.Run(":8080")

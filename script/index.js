@@ -67,7 +67,6 @@ const register = async () => {
     displayName
   };
   createCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
-  getCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
 
   // 新しい認証情報の作成/登録
   navigator.credentials.create(createCredentialDefaultArgs)
@@ -111,6 +110,19 @@ const register = async () => {
     .then((assertion) => {
       console.log("ASSERTION", assertion);
     }) */
+    .catch((err) => {
+      console.log("ERROR", err);
+    });
+}
+
+const login = async () => {
+  const res = (await axios.get('/login-request')).data;
+  getCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
+  console.log(getCredentialDefaultArgs);
+  navigator.credentials.get(getCredentialDefaultArgs)
+    .then((res) => {
+      console.log(res);
+    })
     .catch((err) => {
       console.log("ERROR", err);
     });
