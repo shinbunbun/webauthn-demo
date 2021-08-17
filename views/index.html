@@ -17,30 +17,29 @@
                     <div class="navbar-brand d-flex align-items-center">
                         <strong>WebAuthn</strong>
                     </div>
-                    <div class="navbar-brand d-flex align-items-right">
-                        <button class="btn btn-primary" onclick="login()" type="button">Log in</button>
-                    </div>
                 </div>
             </div>
         </header>
         <br><br>
-        <div class="login-form">
+        <div class="login-form row-col">
             <div class="container text-center">
                 <main class="form-signin">
                     <form>
                         <img class="mb-4" src="/assets/icon.jpg" alt="" width="72">
                         <h1 class="h3 mb-3 fw-normal">Sign Up</h1>
                         <label for="inputEmail" class="visually-hidden">E-mail</label>
-                        <input type="email" id="inputEmail" class="form-control" placeholder="E-mail" required
+                        <input type="email" id="inputEmail" class="form-control" placeholder="E-mail（required）" required
                             autofocus>
                         <div class="py-2"></div>
                         <label for="inputDisplayName" class="visually-hidden">display name</label>
-                        <input type="text" id="inputDisplayName" class="form-control" placeholder="display name"
-                            required autofocus>
+                        <input type="text" id="inputDisplayName" class="form-control" placeholder="Display name"
+                            autofocus>
                         <!-- <label for="inputPassword" class="visually-hidden">Password</label>
                         <input type="password" id="inputPassword" class="form-control" placeholder="Password" required> -->
                         <br>
                         <button class="w-100 btn btn-lg btn-primary" onclick="register()" type="button">Sign Up</button>
+                        <div class="py-1"></div>
+                        <button class="w-100 btn btn-lg btn-primary" onclick="login()" type="button">Log In</button>
                     </form>
                 </main>
             </div>
