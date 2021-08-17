@@ -147,14 +147,30 @@ func main() {
 		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
 	})
 
-	router.GET("/login-request", func(ctx *gin.Context) {
+	router.POST("/login-request", func(ctx *gin.Context) {
+
+		var json JsonRequest
+		if err := ctx.ShouldBindJSON(&json); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		db, dbErr := gorm.Open("sqlite3", "store.sqlite")
+		if dbErr != nil {
+			println(dbErr)
+		}
+
+		var userData User
+		db.Where("Email = ?", json.Email).First(&userData)
+
 		challenge, challengeErr := rand.Int(rand.Reader, big.NewInt(999999999999999999))
 		if challengeErr != nil {
 			println(challengeErr)
 		}
+
 		var challengeStr string = base64.StdEncoding.EncodeToString([]byte(challenge.String()))
 
-		ctx.JSON(http.StatusOK, gin.H{"challenge": challengeStr})
+		ctx.JSON(http.StatusOK, gin.H{"challenge": challengeStr, "id": userData.Id})
 	})
 
 	router.Run(":8080")

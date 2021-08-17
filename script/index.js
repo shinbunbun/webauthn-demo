@@ -116,7 +116,8 @@ const register = async () => {
 }
 
 const login = async () => {
-  const res = (await axios.get('/login-request')).data;
+  const email = document.querySelector('#inputEmail').value;
+  const res = (await axios.post('/login-request', { email, display_name: 'dummy' })).data;
   getCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
   console.log(getCredentialDefaultArgs);
   navigator.credentials.get(getCredentialDefaultArgs)
