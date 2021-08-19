@@ -141,7 +141,7 @@ func main() {
 
 		db.Where("challenge = ?", json.Response.ClientDataJSON.Challenge).First(&session)
 
-		var userData = User{Id: session.Id, Email: session.Email, DisplayName: session.DisplayName}
+		var userData = User{Id: json.ID, Email: session.Email, DisplayName: session.DisplayName}
 		db.Create(&userData)
 
 		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
