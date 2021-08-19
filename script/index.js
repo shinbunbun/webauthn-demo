@@ -123,7 +123,7 @@ const register = async () => {
       console.log(base64url2base64(cred.id));
       /* console.log(base64ToArrayBuffer(`${cred.id}==`)); */
 
-      const idList = [{
+      /* const idList = [{
         id: base64ToArrayBuffer(base64url2base64(cred.id)).buffer,
         transports: ['usb', 'nfc', 'ble', 'internal'],
         type: 'public-key',
@@ -131,7 +131,7 @@ const register = async () => {
       getCredentialDefaultArgs.publicKey.allowCredentials = idList;
       getCredentialDefaultArgs.publicKey.challenge = base64ToArrayBuffer(res.challenge).buffer;
       console.log(getCredentialDefaultArgs);
-      return navigator.credentials.get(getCredentialDefaultArgs);
+      return navigator.credentials.get(getCredentialDefaultArgs); */
     })
     .then((assertion) => {
       console.log('ASSERTION', assertion);
