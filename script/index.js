@@ -5,6 +5,7 @@ const createCredentialDefaultArgs = {
     // RPの情報
     rp: {
       name: '',
+      id: 'localhost',
     },
 
     // ユーザー情報
@@ -38,6 +39,7 @@ const getCredentialDefaultArgs = {
     timeout: 60000,
     // サーバーから暗号学的にランダムな値が送られていなければならない
     challenge: '',
+    rpId: 'localhost',
   },
 };
 
@@ -107,6 +109,7 @@ const register = async () => {
       authRes.response.attestationObject.authData = btoa(
         String.fromCharCode(...authRes.response.attestationObject.authData),
       );
+      authRes.clientDataJSONString = JSON.stringify(authRes.response.clientDataJSON);
 
       console.log(authRes);
       console.log(JSON.stringify(authRes));
