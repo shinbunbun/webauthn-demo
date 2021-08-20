@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -8,6 +9,10 @@ import (
 	"math/big"
 
 	"encoding/base64"
+
+	"crypto/sha256"
+
+	"encoding/binary"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -39,6 +44,7 @@ type RegisterJson struct {
 			AuthData string `json:"authData"`
 		} `json:"attestationObject"`
 	} `json:"response"`
+	ClientDataJSONString string `json:"clientDataJSONString"`
 }
 
 type LoginRequestParam struct {
@@ -55,6 +61,34 @@ type User struct {
 	Id          string `gorm:"column:id"`
 	Email       string `gorm:"column:email"`
 	DisplayName string `gorm:"column:displayname"`
+}
+
+type AuthenticatorData struct {
+	rpIdHash []byte
+	flags    struct {
+		ed byte
+		at byte
+		uv byte
+		up byte
+	}
+	signCount              []byte
+	attestedCredentialData struct {
+		aaguid              []byte
+		credentialIdLength  uint16
+		credentialId        []byte
+		credentialPublicKey []byte
+	}
+}
+
+func getSHA256Binary(s string) []byte {
+	r := sha256.Sum256([]byte(s))
+	return r[:]
+}
+
+func Bytes2uint(bytes ...byte) uint16 {
+	padding := make([]byte, 8-len(bytes))
+	i := binary.BigEndian.Uint16(append(padding, bytes...))
+	return i
 }
 
 func main() {
@@ -126,22 +160,84 @@ func main() {
 	})
 
 	router.POST("/register", func(ctx *gin.Context) {
-		var json RegisterJson
-		if err := ctx.ShouldBindJSON(&json); err != nil {
+		var registerJson RegisterJson
+		if err := ctx.ShouldBindJSON(&registerJson); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		/* fmt.Println(registerJson.ClientDataJSONString)
+		fmt.Println("まああああああああああにいいいいいいいいいいいいいい！！！！！！！！") */
 
 		db, dbErr := gorm.Open("sqlite3", "store.sqlite")
 		if dbErr != nil {
 			println(dbErr)
 		}
 
+		var isValid int = 1
+
+		// typeを検証
+		if registerJson.Response.ClientDataJSON.Type != "webauthn.create" {
+			isValid = 0
+		}
+
+		//originを検証
+		if registerJson.Response.ClientDataJSON.Origin != "http://localhost:8080" {
+			isValid = 0
+		}
+
+		// Authenticator Dataを取り出す
+		authData, _ := base64.StdEncoding.DecodeString(registerJson.Response.AttestationObject.AuthData)
+		var authenticatorData AuthenticatorData
+		authenticatorData.rpIdHash = authData[0:32]
+		var flags = authData[32]
+		authenticatorData.flags.ed = (flags >> 7) & 1
+		authenticatorData.flags.at = (flags >> 6) & 1
+		authenticatorData.flags.uv = (flags >> 2) & 1
+		authenticatorData.flags.up = flags & 1
+		authenticatorData.signCount = authData[33:37]
+		authenticatorData.attestedCredentialData.aaguid = authData[37:53]
+		authenticatorData.attestedCredentialData.credentialIdLength = Bytes2uint(authData[53:56]...)
+		authenticatorData.attestedCredentialData.credentialId = authData[53 : 53+authenticatorData.attestedCredentialData.credentialIdLength+1]
+		authenticatorData.attestedCredentialData.credentialPublicKey = authData[53+authenticatorData.attestedCredentialData.credentialIdLength+1 : len(authData)]
+
+		/* fmt.Printf("%#v\n", authenticatorData) */
+
+		// rpidのhashを検証
+		/* var clientDataJSON, clientDataJSONErr = json.Marshal(registerJson.Response.ClientDataJSON)
+		if clientDataJSONErr != nil {
+			println(clientDataJSONErr)
+		} */
+		fmt.Println(getSHA256Binary("localhost"))
+		fmt.Println(authenticatorData.rpIdHash)
+		if string(getSHA256Binary("localhost")) != string(authenticatorData.rpIdHash) {
+			isValid = 0
+		}
+
+		// flagsを検証
+		if authenticatorData.flags.uv != 1 && authenticatorData.flags.up != 1 {
+			isValid = 0
+		}
+
+		/* 		//よくわからんエンコードだから、JSで書いて
+		   		//うんちぶりぶり
+		   		var credentialPublicKey []byte
+		   		err := cbor.Unmarshal(authenticatorData.attestedCredentialData.credentialPublicKey, &credentialPublicKey)
+		   		if err != nil {
+		   			fmt.Println("ERROR:", err)
+		   		}
+
+		   		//map[interface{}]interface{}
+		   		// 0xなんとか
+		   		fmt.Println(credentialPublicKey) */
+
+		println(isValid)
+
 		var session Session
 
-		db.Where("challenge = ?", json.Response.ClientDataJSON.Challenge).First(&session)
+		db.Where("challenge = ?", registerJson.Response.ClientDataJSON.Challenge).First(&session)
 
-		var userData = User{Id: json.ID, Email: session.Email, DisplayName: session.DisplayName}
+		var userData = User{Id: registerJson.ID, Email: session.Email, DisplayName: session.DisplayName}
 		db.Create(&userData)
 
 		ctx.JSON(http.StatusOK, gin.H{"verificationStatus": "succeeded"})
