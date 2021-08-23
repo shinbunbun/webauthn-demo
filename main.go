@@ -219,6 +219,7 @@ func main() {
 			isValid = 0
 		}
 
+		// todo: credentialPublicKeyの取り出しとalgの検証
 		/* 		//よくわからんエンコードだから、JSで書いて
 		   		//うんちぶりぶり
 		   		var credentialPublicKey []byte
@@ -230,6 +231,8 @@ func main() {
 		   		//map[interface{}]interface{}
 		   		// 0xなんとか
 		   		fmt.Println(credentialPublicKey) */
+
+		// todo: 署名検証
 
 		println(isValid)
 

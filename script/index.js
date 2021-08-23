@@ -119,7 +119,7 @@ const register = async () => {
 
       if (regRes.data.verificationStatus === 'succeeded') {
         // eslint-disable-next-line no-restricted-globals
-        /* location.href = '/success-sign-in'; */
+        location.href = '/success-sign-in';
       }
 
       console.log(btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
