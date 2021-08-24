@@ -14,6 +14,7 @@ import (
 
 	"encoding/binary"
 
+	"github.com/fxamacker/cbor/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -166,8 +167,7 @@ func main() {
 			return
 		}
 
-		/* fmt.Println(registerJson.ClientDataJSONString)
-		fmt.Println("まああああああああああにいいいいいいいいいいいいいい！！！！！！！！") */
+		/* fmt.Println(registerJson.ClientDataJSONString)*/
 
 		db, dbErr := gorm.Open("sqlite3", "store.sqlite")
 		if dbErr != nil {
@@ -219,18 +219,29 @@ func main() {
 			isValid = 0
 		}
 
-		// todo: credentialPublicKeyの取り出しとalgの検証
-		/* 		//よくわからんエンコードだから、JSで書いて
-		   		//うんちぶりぶり
-		   		var credentialPublicKey []byte
-		   		err := cbor.Unmarshal(authenticatorData.attestedCredentialData.credentialPublicKey, &credentialPublicKey)
-		   		if err != nil {
-		   			fmt.Println("ERROR:", err)
-		   		}
+		fmt.Println(authenticatorData.attestedCredentialData.credentialPublicKey)
 
-		   		//map[interface{}]interface{}
-		   		// 0xなんとか
-		   		fmt.Println(credentialPublicKey) */
+		// todo: credentialPublicKeyの取り出しとalgの検証
+
+		var pkGot interface{}
+		keyBytesGot := authenticatorData.attestedCredentialData.credentialPublicKey
+		cbor.Unmarshal(keyBytesGot, &pkGot)
+		/* 		rawBytes, _ := cbor.Marshal(keyBytesGot)
+
+		   		fmt.Println(rawBytes) */
+
+		fmt.Printf("%#v\n", pkGot)
+
+		/*
+			var credentialPublicKey []byte
+			err := cbor.Unmarshal(authenticatorData.attestedCredentialData.credentialPublicKey, &credentialPublicKey)
+			if err != nil {
+				fmt.Println("ERROR:", err)
+			}
+
+			//map[interface{}]interface{}
+			// 0xなんとか
+			fmt.Println(credentialPublicKey) */
 
 		// todo: 署名検証
 
